@@ -49,7 +49,7 @@ pipeline {
        stage('CodeQuality') {
            steps {
                echo 'Code Quality....'
-                sh './gradlew sonarqube -Dsonar.host.url=http://sonarqube:9000'
+                sh './gradlew sonarqube -Dsonar.host.url=http://10.28.133.25:9000'
            }
        }
    }
