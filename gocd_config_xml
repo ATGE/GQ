@@ -1,0 +1,156 @@
+<pipelines group="Webapp">
+    <pipeline name="web-app">
+      <materials>
+        <git url="git@github.com:ATGE/GQ.git" />
+      </materials>
+      <stage name="build" cleanWorkingDir="true">
+        <jobs>
+          <job name="build">
+            <tasks>
+              <exec command="./gradlew">
+                <arg>clean</arg>
+                <arg>build</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="Test" cleanWorkingDir="true">
+        <jobs>
+          <job name="UnitTest">
+            <tasks>
+              <exec command="./gradlew">
+                <arg>clean</arg>
+                <arg>check</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <tabs>
+              <tab name="UNIT_TEST" path="report/index.html" />
+            </tabs>
+            <artifacts>
+              <artifact src="build/reports/tests/test/*" dest="report" />
+              <test src="build/test-results/test/*.xml" dest="tests" />
+            </artifacts>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="Package">
+        <jobs>
+          <job name="JAR">
+            <tasks>
+              <exec command="./gradlew">
+                <arg>clean</arg>
+                <arg>war</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <artifacts>
+              <artifact src="build/libs/*.war" dest="webapp" />
+            </artifacts>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="CodeQuality">
+        <jobs>
+          <job name="sonar">
+            <tasks>
+              <exec command="./gradlew">
+                <arg>sonarqube</arg>
+                <arg>-Dsonar.host.url=http://sonarqube:9000</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+  </pipelines>
+  <pipelines group="Web">
+    <pipeline name="web-app-gq">
+      <materials>
+        <git url="git@github.com:ATGE/DevOps.git" />
+      </materials>
+      <stage name="build" cleanWorkingDir="true">
+        <jobs>
+          <job name="build">
+            <tasks>
+              <exec command="./gradlew" workingdir="tasks/WebApp">
+                <arg>clean</arg>
+                <arg>assemble</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="Test" cleanWorkingDir="true">
+        <jobs>
+          <job name="UnitTest">
+            <tasks>
+              <exec command="./gradlew" workingdir="tasks/WebApp">
+                <arg>clean</arg>
+                <arg>check</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <tabs>
+              <tab name="UNIT_TEST" path="report/index.html" />
+            </tabs>
+            <artifacts>
+              <artifact src="tasks/WebApp/build/reports/tests/test/*" dest="report" />
+              <test src="tasks/WebApp/build\test-results/test/*.xml" dest="tests" />
+            </artifacts>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="Package">
+        <jobs>
+          <job name="JAR">
+            <tasks>
+              <exec command="./gradlew" workingdir="tasks/WebApp">
+                <arg>clean</arg>
+                <arg>war</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+            <artifacts>
+              <artifact src="tasks/WebApp/build/libs/*.war" dest="webapp" />
+            </artifacts>
+          </job>
+        </jobs>
+      </stage>
+      <stage name="codeQuality">
+        <jobs>
+          <job name="sonar">
+            <tasks>
+              <exec command="./gradlew" workingdir="tasks/WebApp">
+                <arg>sonarqube</arg>
+                <arg>-Dsonar.host.url=http://sonarqube:9000</arg>
+                <runif status="passed" />
+              </exec>
+            </tasks>
+          </job>
+        </jobs>
+      </stage>
+    </pipeline>
+  </pipelines>
+  <environments>
+    <environment name="devops">
+      <agents>
+        <physical uuid="17e93a46-e1c0-4468-8728-c48fa89fff87" />
+      </agents>
+      <pipelines>
+        <pipeline name="web-app" />
+      </pipelines>
+    </environment>
+    <environment name="DevTest">
+      <agents>
+        <physical uuid="17e93a46-e1c0-4468-8728-c48fa89fff87" />
+      </agents>
+      <pipelines>
+        <pipeline name="web-app-gq" />
+      </pipelines>
+    </environment>
+  </environments>
